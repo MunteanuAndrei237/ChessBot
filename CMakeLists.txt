@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.24)
 project(chessbot)
 
 set(CMAKE_CXX_STANDARD 17)
-include_directories(headers C:/sfml/SFML-2.5.1/include)
+include_directories(headers C://SFML-2.6.0//include)
 
 add_executable(chessbot main.cpp)
 
-set(SFML_ROOT C:/sfml/SFML-2.5.1)
+set(SFML_ROOT C://SFML-2.6.0)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_modules")
 find_package(SFML REQUIRED system window graphics network audio)
 if (SFML_FOUND)
