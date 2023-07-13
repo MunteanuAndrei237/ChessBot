@@ -4,12 +4,11 @@
 #include <memory>
 #include <utility>
 #include <cmath>
+#include <random>
 
 #include "C://SFML-2.6.0//include//SFML//System.hpp"
 #include "C://SFML-2.6.0//include//SFML//Window.hpp"
 #include "C://SFML-2.6.0//include//SFML//Graphics.hpp"
-
-#define getName(VariableName) # VariableName
 
 using namespace std;
 pair<int,int>  fromnametocoordinates(const string& s)
@@ -111,13 +110,15 @@ private:
     string color;
     string ontile;
     static int dimension;
-
     sf::RectangleShape tilerectangle;
     sf::Sprite tilesprite;
+    bool highlighted;
+    //sf::Color sfcolor;
 public:
     sf::RenderTexture tiletexture;
+
     tile(int r, int c) : row(r), column(c), letter(string(1, char(96 + (9-c)))),
-                         color((c + r) % 2 == 0 ? "white" : "black"), ontile("empty") {}
+                         color((c + r) % 2 == 0 ? "white" : "black"), ontile("empty"),highlighted(false){}
 
     tile(const tile &other) : row(other.row), column(other.column), letter(other.letter),
                               color(other.color) , ontile(other.ontile) {}
@@ -127,6 +128,11 @@ public:
     void setontile(const string &s){
         ontile=s;
     };
+    static int gettiledimension()
+    {
+        return dimension;
+    }
+
     /*shared_ptr<sf::RenderTexture> gettiletexture()
     {
         return make_shared<sf::RenderTexture>(tiletexture) ;
@@ -134,8 +140,8 @@ public:
     void drawtile(){
         tiletexture.create(dimension,dimension);
         tilerectangle.setSize(sf::Vector2f(dimension, dimension));
-        tilerectangle.setFillColor(color == "black" ? *new sf::Color(36, 36, 36) : *new sf::Color(235, 233, 209));
-        cout<<" "<<row<<" "<<column<<" "<<fromcoordinatestoname(make_pair(row,column))<<" "<<(column - 1) * dimension<<" "<< (row - 1) * dimension<<" ";
+        tilerectangle.setFillColor( (column + row) % 2 == 0 ? sf::Color(240,227,182,255) : sf::Color(36,36,36,255));
+        //cout<<" "<<row<<" "<<column<<" "<<fromcoordinatestoname(make_pair(row,column))<<" "<<(column - 1) * dimension<<" "<< (row - 1) * dimension<<" ";
         sf::Text text(fromcoordinatestoname(make_pair(row,column)), font);
         text.setCharacterSize(12);
         text.setFillColor(sf::Color::Red);
@@ -143,9 +149,12 @@ public:
         tiletexture.draw(text);
 
     }
-    void drawtilesprite(sf::RenderTexture& t){
+    void drawtilesprite(sf::RenderTexture& t,const string& vp ){
         tilesprite.setTexture(tiletexture.getTexture());
+        if(vp=="black")
         tilesprite.setPosition((row - 1) * dimension, (8-column) * dimension);
+        else
+            tilesprite.setPosition((8-row) * dimension, (column-1) * dimension);
         t.draw(tilesprite);
     }
     string getontile()
@@ -157,10 +166,6 @@ public:
         return make_pair(row,column);
     }
 
-    static int gettiledimension()
-    {
-        return dimension;
-    }
 
     friend ostream &operator<<(ostream &os, const tile &tile) {
         os << "row: " << tile.row << " column: " << tile.column << " letter: " << tile.letter
@@ -169,45 +174,63 @@ public:
     }
 };
 int tile::dimension=max(int(window.getSize().y/12),60);
-sf::Texture texture2;
+
+
 class piece {
 protected:
-    static vector<shared_ptr<piece>> pieces;
+    //static vector<shared_ptr<piece>> pieces;
     static map<string,shared_ptr<tile>> totaltiles;
-    pair<shared_ptr<tile>, string> tilepair;
+    pair<string ,shared_ptr<tile>> tilepair;
     map<string,shared_ptr<tile>> possiblesquares;
     int value;
     string piececolor;
     int piecedimension=max(int(window.getSize().y/15),48);
     int piecepadding=max((int(window.getSize().y/15)-int(window.getSize().y/12))/2,6);
     sf::Sprite piece_sprite;
+    bool moved=false;
 public:
-    piece(pair<shared_ptr<tile>, string> tp, const map<string,shared_ptr<tile>> ps, int v, string piececolor) : tilepair(
+
+    piece();
+    piece(pair<string,shared_ptr<tile>> tp, const map<string,shared_ptr<tile>> ps, int v, string piececolor) : tilepair(
             tp), possiblesquares(ps), value(v), piececolor(piececolor){
-        pieces.push_back(make_shared<piece>(*this));
+        //pieces.push_back(make_shared<piece>(*this));
     }
     static void addtile(shared_ptr<tile> t,const string &x)
     {
         totaltiles[x]=t;
     }
     virtual ~piece() {}
-    pair<shared_ptr<tile>, string> gettile(){
-        return tilepair;
-    }
+
+    void setMoved(bool moved);
+
+    void setTilepair(const pair<string,shared_ptr<tile>>  &tilepair);
+
+    static const map<string, shared_ptr<tile>> &getTotaltiles();
+
+    const pair<string,shared_ptr<tile>>  &getTilepair() const;
+
+    const map<string, shared_ptr<tile>> &getPossiblesquares() const;
+
+    int getValue() const;
+
+    const string &getPiececolor() const;
+
+    int getPiecedimension() const;
+
+    int getPiecepadding() const;
+
+    const sf::Sprite &getPieceSprite() const;
+
     void drawpiece(){
         piece_sprite.setScale(float(piecedimension) / 128.0f, float(piecedimension) / 128.0f);
         piece_sprite.setPosition(0,0);
-        tilepair.first->tiletexture.draw(piece_sprite);
-    }
-    sf::Sprite getpiecesprite()
-    {
-        return piece_sprite;
+        tilepair.second->tiletexture.draw(piece_sprite);
     }
     friend ostream &operator<<(ostream &os, const piece &piece) {
         os << "currenttile: " << piece.tilepair.second << " possiblesquares: ";
         for(auto itr=piece.possiblesquares.begin();itr!=piece.possiblesquares.end();itr++)
         {
-            cout<<itr->first<<" "<<endl;
+            cout<<itr->second<<" "<<endl;
         }
         os << " value: " << piece.value;
         return os;
@@ -217,22 +240,64 @@ public:
             return true;
         return false;
     }
+    virtual void calculatepossiblemoves() =0;
 };
 map<string,shared_ptr<tile>>  piece::totaltiles={};
-vector<shared_ptr<piece>> piece::pieces = {};
+
+const map<string, shared_ptr<tile>> &piece::getTotaltiles() {
+    return totaltiles;
+}
+
+const pair<string,shared_ptr<tile>>  &piece::getTilepair() const {
+    return tilepair;
+}
+
+const map<string, shared_ptr<tile>> &piece::getPossiblesquares() const {
+    return possiblesquares;
+}
+
+int piece::getValue() const {
+    return value;
+}
+
+const string &piece::getPiececolor() const {
+    return piececolor;
+}
+
+int piece::getPiecedimension() const {
+    return piecedimension;
+}
+
+int piece::getPiecepadding() const {
+    return piecepadding;
+}
+
+const sf::Sprite &piece::getPieceSprite() const {
+    return piece_sprite;
+}
+
+void piece::setTilepair(const pair<string,shared_ptr<tile>>  &tilepair) {
+    piece::tilepair = tilepair;
+}
+
+void piece::setMoved(bool moved) {
+    piece::moved = moved;
+}
+//vector<shared_ptr<piece>> piece::pieces = {};
 
 class rook : public piece {
 private:
     vector<pair<int,int>> const movement={{1,0},{0,-1},{0,1},{-1,0}};
-    bool moved=false;
+
 public:
-    rook(pair<shared_ptr<tile>, string> tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 5,piececolor) {
+    rook(pair<string,shared_ptr<tile>>  tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 5,piececolor) {
         piececolor=="white" ? piece_sprite.setTexture(textures::white_rook_texture) : piece_sprite.setTexture(textures::black_rook_texture);
     }
 
-    void calculatepossiblemoves()
+    void calculatepossiblemoves () override
     {
-        pair<int,int> currentposition= fromnametocoordinates(tilepair.second);
+
+        pair<int,int> currentposition= fromnametocoordinates(tilepair.first);
         int currentx=currentposition.first;int currenty=currentposition.second;
         possiblesquares={};
         for(auto& i:movement)
@@ -271,13 +336,13 @@ class bishop : public piece {
 private:
     vector<pair<int,int>> const movement={{1,1},{1,-1},{-1,1},{-1,-1}};
 public:
-    bishop(pair<shared_ptr<tile>, string> tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 3,
+    bishop(pair<string,shared_ptr<tile>>  tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 3,
                                                                                                                 piececolor) {
         piececolor=="white" ? piece_sprite.setTexture(textures::white_bishop_texture) : piece_sprite.setTexture(textures::black_bishop_texture);
     }
-    void calculatepossiblemoves()
+    void calculatepossiblemoves() override
     {
-        pair<int,int> currentposition= fromnametocoordinates(tilepair.second);
+        pair<int,int> currentposition= fromnametocoordinates(tilepair.first);
         int currentx=currentposition.first;int currenty=currentposition.second;
         possiblesquares={};
         for(auto& i:movement)
@@ -315,7 +380,7 @@ class knight : public piece {
 private:
     vector<pair<int,int>> const movement={{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{-1,2},{1,-2},{-1,-2}};
 public:
-    knight(pair<shared_ptr<tile>, string> tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 3,
+    knight(pair<string,shared_ptr<tile>>  tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 3,
                                                                                                                 piececolor) {
         piececolor=="white" ? piece_sprite.setTexture(textures::white_knight_texture) : piece_sprite.setTexture(textures::black_knight_texture);
     }
@@ -326,9 +391,9 @@ public:
         os << static_cast<const piece &>(knight);
         return os;
     }
-    void calculatepossiblemoves()
+    void calculatepossiblemoves() override
     {
-        pair<int,int> currentposition= fromnametocoordinates(tilepair.second);
+        pair<int,int> currentposition= fromnametocoordinates(tilepair.first);
         int currentx=currentposition.first;int currenty=currentposition.second;
         possiblesquares={};
         for(auto& i:movement)
@@ -349,13 +414,13 @@ class queen : public piece {
 private:
     vector<pair<int,int>> const movement={{1,1},{1,-1},{-1,1},{-1,-1},{0,1},{0,-1},{1,0},{-1,0}};
 public:
-    queen(pair<shared_ptr<tile>, string> tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 9,
+    queen(pair<string,shared_ptr<tile>>  tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 9,
                                                                                                                piececolor) {
         piececolor=="white" ? piece_sprite.setTexture(textures::white_queen_texture) : piece_sprite.setTexture(textures::black_queen_texture);
     }
-    void calculatepossiblemoves()
+    void calculatepossiblemoves() override
     {
-        pair<int,int> currentposition= fromnametocoordinates(tilepair.second);
+        pair<int,int> currentposition= fromnametocoordinates(tilepair.first);
         int currentx=currentposition.first;int currenty=currentposition.second;
         possiblesquares={};
         for(auto& i:movement)
@@ -391,11 +456,10 @@ public:
 
 class pawn : public piece {
 private:
-    bool moved=false;
     bool enpassantable=false;
     vector<pair<int,int>> movement;
 public:
-    pawn(pair<shared_ptr<tile>, string> tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 1,
+    pawn(pair<string,shared_ptr<tile>>  tp, const map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 1,
                                                                                                               piececolor){
         if(piececolor=="black")
             movement={{0,-1},{0,-2},{1,-1},{-1,-1}};
@@ -403,21 +467,19 @@ public:
             movement={{0,1},{0,2},{1,1},{-1,1}};
         piececolor=="white" ? piece_sprite.setTexture(textures::white_pawn_texture) : piece_sprite.setTexture(textures::black_pawn_texture);
     }
-    void calculatepossiblemoves()
+    void calculatepossiblemoves() override
     {
-        pair<int,int> currentposition= fromnametocoordinates(tilepair.second);
+        pair<int,int> currentposition= fromnametocoordinates(tilepair.first);
         int currentx=currentposition.first;int currenty=currentposition.second;
         possiblesquares={};
         int pawnmovetype=0;
         for(auto& i:movement)
         {
             pawnmovetype+=1;
-            //cout<<i.first<<" "<<i.second<<endl;
+
             if(between1and8(currentx+i.first) && between1and8(currenty+i.second))
             {
                 string tilename=fromcoordinatestoname(make_pair(currentx+i.first,currenty+i.second));
-
-                //cout<<pawnmovetype<<totaltiles[tilename]->getontile()<<tilename<<endl;
                 if(pawnmovetype==1 && totaltiles[tilename]->getontile()=="empty" )
                 {
                     possiblesquares[tilename]=totaltiles[tilename];
@@ -442,16 +504,14 @@ public:
 
 class king : public piece {
 private:
-    bool moved=false;
-private:
     vector<pair<int,int>> const movement={{1,1},{1,-1},{-1,1},{-1,-1},{0,1},{0,-1},{1,0},{-1,0}};
 public:
-    king(pair<shared_ptr<tile>, string> tp, map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 0,
+    king(pair<string,shared_ptr<tile>>  tp, map<string,shared_ptr<tile>> ps, string piececolor) : piece(tp, ps, 0,
                                                                                                         piececolor) {
         piececolor=="white" ? piece_sprite.setTexture(textures::white_king_texture) : piece_sprite.setTexture(textures::black_king_texture);
     }
-    void calculatepossiblemoves() {
-        pair<int, int> currentposition = fromnametocoordinates(tilepair.second);
+    void calculatepossiblemoves() override{
+        pair<int, int> currentposition = fromnametocoordinates(tilepair.first);
         int currentx = currentposition.first;
         int currenty = currentposition.second;
         possiblesquares = {};
@@ -460,7 +520,6 @@ public:
                 string tilename = fromcoordinatestoname(make_pair(currentx + i.first, currenty + i.second));
                 if (totaltiles[tilename]->getontile() != piececolor) {
                     possiblesquares[tilename] = totaltiles[tilename];
-                    cout << tilename << endl;
                 }
             }
         }
@@ -475,107 +534,115 @@ public:
 
 class table {
 private:
-    static vector <std::shared_ptr<tile>> tilesvector;
-    static vector <std::shared_ptr<piece>> piecevector;
     static map<std::string, std::shared_ptr<piece>> tablepieces;
     static map<std::string, std::shared_ptr<tile>> tabletiles;
+    static map<std::string, std::string> pieceontile;
     static sf::RenderTexture tabletexture;
     static sf::Sprite tablesprite;
+    static string viewposition;
 public:
 
     table(const string &gamemodetype) {
         if (gamemodetype == "standard") {
             for (int i = 1; i <= 8; i++)
                 for (int j = 1; j <= 8; j++) {
-                    //push a pair of a pointer of tile (i,j) and then the name(e4)
-                    shared_ptr<tile> newtilepointer=make_shared<tile>(tile(i, j));
-                    tilesvector.push_back(newtilepointer);
-                    cout<<newtilepointer<<" "<<i<<" "<<j<<endl;
-                    string squarenamecreated = string(1, char(96 + (9-i))) + to_string(j);
-                    tabletiles[squarenamecreated]=newtilepointer;
-                    pair<shared_ptr<tile>,string> paircreated= make_pair(newtilepointer,squarenamecreated);
-                    piece::addtile(newtilepointer,squarenamecreated);
-                    //generate color and names automatically
+                    if (rand() % 2 == 2343)
+                        viewposition = "white";
+                    else
+                        viewposition = "black";
+                    shared_ptr<tile> newtilepointer = make_shared<tile>(tile(i, j));
+
+                    string squarenamecreated = string(1, char(96 + (9 - i))) + to_string(j);
+
+                    tabletiles[squarenamecreated] = newtilepointer;
+
+                    pair<string,shared_ptr<tile>> paircreated = make_pair( squarenamecreated,newtilepointer);
+
+                    piece::addtile(newtilepointer, squarenamecreated);
+
+                    pieceontile[squarenamecreated] = "empty";
+
                     // black pieces
                     if (squarenamecreated == "a8") {
                         rook lBR(paircreated, {}, "black");
                         tablepieces["lBR"] = std::make_shared<rook>(lBR);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "b8") {
+                        pieceontile[squarenamecreated] = "lBR";
+                    } else if (squarenamecreated == "b8") {
                         knight lBN(paircreated, {}, "black");
                         tablepieces["lBN"] = std::make_shared<knight>(lBN);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "c8") {
+                        pieceontile[squarenamecreated] = "lBN";
+                    } else if (squarenamecreated == "c8") {
                         bishop lBB(paircreated, {}, "black");
                         tablepieces["lBB"] = std::make_shared<bishop>(lBB);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "d8") {
+                        pieceontile[squarenamecreated] = "lBB";
+                    } else if (squarenamecreated == "d8") {
                         queen BQ(paircreated, {}, "black");
                         tablepieces["BQ"] = std::make_shared<queen>(BQ);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "e8") {
+                        pieceontile[squarenamecreated] = "BQ";
+                    } else if (squarenamecreated == "e8") {
                         king BK(paircreated, {}, "black");
                         tablepieces["BK"] = std::make_shared<king>(BK);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "f8") {
+                        pieceontile[squarenamecreated] = "BK";
+                    } else if (squarenamecreated == "f8") {
                         bishop rBB(paircreated, {}, "black");
                         tablepieces["rBB"] = std::make_shared<bishop>(rBB);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "g8") {
+                        pieceontile[squarenamecreated] = "rBB";
+                    } else if (squarenamecreated == "g8") {
                         knight rBN(paircreated, {}, "black");
                         tablepieces["rBN"] = std::make_shared<knight>(rBN);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "h8") {
+                        pieceontile[squarenamecreated] = "rBN";
+                    } else if (squarenamecreated == "h8") {
                         rook rBR(paircreated, {}, "black");
                         tablepieces["rBR"] = std::make_shared<rook>(rBR);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "a7") {
+                        pieceontile[squarenamecreated] = "rBR";
+                    } else if (squarenamecreated == "a7") {
                         pawn aBP(paircreated, {}, "black");
                         tablepieces["aBP"] = std::make_shared<pawn>(aBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "b7") {
+                        pieceontile[squarenamecreated] = "aBP";
+                    } else if (squarenamecreated == "b7") {
                         pawn bBP(paircreated, {}, "black");
                         tablepieces["bBP"] = std::make_shared<pawn>(bBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "c7") {
+                        pieceontile[squarenamecreated] = "bBP";
+                    } else if (squarenamecreated == "c7") {
                         pawn cBP(paircreated, {}, "black");
                         tablepieces["cBP"] = std::make_shared<pawn>(cBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "d7") {
+                        pieceontile[squarenamecreated] = "cBP";
+                    } else if (squarenamecreated == "d7") {
                         pawn dBP(paircreated, {}, "black");
                         tablepieces["dBP"] = std::make_shared<pawn>(dBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "e7") {
+                        pieceontile[squarenamecreated] = "dBP";
+                    } else if (squarenamecreated == "e7") {
                         pawn eBP(paircreated, {}, "black");
                         tablepieces["eBP"] = std::make_shared<pawn>(eBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "f7") {
+                        pieceontile[squarenamecreated] = "eBP";
+                    } else if (squarenamecreated == "f7") {
                         pawn fBP(paircreated, {}, "black");
                         tablepieces["fBP"] = std::make_shared<pawn>(fBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "g7") {
+                        pieceontile[squarenamecreated] = "fBP";
+                    } else if (squarenamecreated == "g7") {
                         pawn gBP(paircreated, {}, "black");
                         tablepieces["gBP"] = std::make_shared<pawn>(gBP);
                         newtilepointer->setontile("black");
-                    }
-                    else if (squarenamecreated == "h7") {
+                        pieceontile[squarenamecreated] = "gBP";
+                    } else if (squarenamecreated == "h7") {
                         pawn hBP(paircreated, {}, "black");
                         tablepieces["hBP"] = std::make_shared<pawn>(hBP);
                         newtilepointer->setontile("black");
+                        pieceontile[squarenamecreated] = "hBP";
                     }
 
 // white pieces
@@ -583,138 +650,365 @@ public:
                         rook lWR(paircreated, {}, "white");
                         tablepieces["lWR"] = std::make_shared<rook>(lWR);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "b1") {
+                        pieceontile[squarenamecreated] = "lWR";
+                    } else if (squarenamecreated == "b1") {
                         knight lWN(paircreated, {}, "white");
                         tablepieces["lWN"] = std::make_shared<knight>(lWN);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "c1") {
+                        pieceontile[squarenamecreated] = "lWN";
+                    } else if (squarenamecreated == "c1") {
                         bishop lWB(paircreated, {}, "white");
                         tablepieces["lWB"] = std::make_shared<bishop>(lWB);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "d1") {
+                        pieceontile[squarenamecreated] = "lWB";
+                    } else if (squarenamecreated == "d1") {
                         queen WQ(paircreated, {}, "white");
                         tablepieces["WQ"] = std::make_shared<queen>(WQ);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "e1") {
+                        pieceontile[squarenamecreated] = "WQ";
+                    } else if (squarenamecreated == "e1") {
                         king WK(paircreated, {}, "white");
                         tablepieces["WK"] = std::make_shared<king>(WK);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "f1") {
+                        pieceontile[squarenamecreated] = "WK";
+                    } else if (squarenamecreated == "f1") {
                         bishop rWB(paircreated, {}, "white");
                         tablepieces["rWB"] = std::make_shared<bishop>(rWB);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "g1") {
+                        pieceontile[squarenamecreated] = "rWB";
+                    } else if (squarenamecreated == "g1") {
                         knight rWN(paircreated, {}, "white");
                         tablepieces["rWN"] = std::make_shared<knight>(rWN);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "h1") {
+                        pieceontile[squarenamecreated] = "rWN";
+                    } else if (squarenamecreated == "h1") {
                         rook rWR(paircreated, {}, "white");
                         tablepieces["rWR"] = std::make_shared<rook>(rWR);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "a2") {
+                        pieceontile[squarenamecreated] = "rWR";
+                    } else if (squarenamecreated == "a2") {
                         pawn aWP(paircreated, {}, "white");
                         tablepieces["aWP"] = std::make_shared<pawn>(aWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "b2") {
+                        pieceontile[squarenamecreated] = "aWP";
+                    } else if (squarenamecreated == "b2") {
                         pawn bWP(paircreated, {}, "white");
                         tablepieces["bWP"] = std::make_shared<pawn>(bWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "c2") {
+                        pieceontile[squarenamecreated] = "bWP";
+                    } else if (squarenamecreated == "c2") {
                         pawn cWP(paircreated, {}, "white");
                         tablepieces["cWP"] = std::make_shared<pawn>(cWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "d2") {
+                        pieceontile[squarenamecreated] = "cWP";
+                    } else if (squarenamecreated == "d2") {
                         pawn dWP(paircreated, {}, "white");
                         tablepieces["dWP"] = std::make_shared<pawn>(dWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "e2") {
+                        pieceontile[squarenamecreated] = "dWP";
+                    } else if (squarenamecreated == "e2") {
                         pawn eWP(paircreated, {}, "white");
                         tablepieces["eWP"] = std::make_shared<pawn>(eWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "f2") {
+                        pieceontile[squarenamecreated] = "eWP";
+                    } else if (squarenamecreated == "f2") {
                         pawn fWP(paircreated, {}, "white");
                         tablepieces["fWP"] = std::make_shared<pawn>(fWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "g2") {
+                        pieceontile[squarenamecreated] = "fWP";
+                    } else if (squarenamecreated == "g2") {
                         pawn gWP(paircreated, {}, "white");
                         tablepieces["gWP"] = std::make_shared<pawn>(gWP);
                         newtilepointer->setontile("white");
-                    }
-                    else if (squarenamecreated == "h2") {
+                        pieceontile[squarenamecreated] = "gWP";
+                    } else if (squarenamecreated == "h2") {
                         pawn hWP(paircreated, {}, "white");
                         tablepieces["hWP"] = std::make_shared<pawn>(hWP);
                         newtilepointer->setontile("white");
+                        pieceontile[squarenamecreated] = "hWP";
                     }
 
                 }
-//actual code
         }
-    };
+    }
+//actual code
+
+    static const map<std::string, std::shared_ptr<piece>> &getTablepieces();
+
+    static const map<std::string, std::shared_ptr<tile>> &getTabletiles();
+
+    static const map<std::string, std::string> &getPieceontile();
+
+    static const sf::RenderTexture &getTabletexture();
+
+    static const sf::Sprite &getTablesprite();
+
+    static const string &getViewposition();
 
     ~table() {};
     void static create_table_texture(){
         tabletexture.create(max(int(window.getSize().y*2/3),480),max(int(window.getSize().y*2/3),480));
     }
+
+    void static modify_pieceontile(const string &s,const string &t)
+    {
+        pieceontile[s]=t;
+    }
+    bool static check_if_in_check(const string &color)
+    {
+        bool check=false;
+        if(color=="white")
+        {
+            for(auto i:tablepieces)
+                if(i.second->getPiececolor()!="white")
+                {
+                    i.second->calculatepossiblemoves();
+                    for(auto ps:i.second->getPossiblesquares())
+                    {
+                        //cout<<ps.first<<" "<<tablepieces["WK"]->getTilepair().second<<endl;
+                        if(ps.second==tablepieces["WK"]->getTilepair().second)
+                        {
+                            cout<<"CHECKW"<<endl<<endl;
+                            check=true;
+                        }
+                    }
+                }
+        }
+        else if(color=="black")
+        {
+            for(auto i:tablepieces)
+                if(i.second->getPiececolor()!="black")
+                {
+                    i.second->calculatepossiblemoves();
+                    for(auto ps:i.second->getPossiblesquares())
+                    {
+                        //cout<<ps.first<<" "<<tablepieces["BK"]->getTilepair().second<<endl;
+                        if(ps.second==tablepieces["BK"]->getTilepair().second)
+                        {
+                            cout<<"CHECKB"<<endl<<endl;
+                            check=true;
+                        }
+                    }
+                }
+        }
+        return check;
+    }
+    void static calculateallmoves()
+    {
+        for (auto j:tablepieces)
+        {
+            j.second->calculatepossiblemoves();
+        }
+    }
+    void static takepiece(const string &piece_name){
+        tablepieces.erase(piece_name);
+    }
+    void static restorepiece(const string &piece_name,shared_ptr<piece> piece_pointer)
+    {
+        tablepieces[piece_name]=piece_pointer;
+    }
     void static drawtable(){
 
-        for(auto i:tilesvector)
+        for(auto i:tabletiles)
         {
-            i->drawtile();
-            cout<<i<<" "<<i->getcoordinates().first<<" "<<i->getcoordinates().second<<endl;
+            i.second->drawtile();
+            //cout<<i.second<<" "<<i.second->getcoordinates().first<<" "<<i.second->getcoordinates().second<<endl;
         }
         for (auto j:tablepieces)
         {
-            cout<<j.first<<" "<<j.second->gettile().first<<" "<<j.second->gettile().second<<endl;
             j.second->drawpiece();
         }
-        for(auto i:tilesvector)
+        for(auto i:tabletiles)
         {
 
-            i->drawtilesprite(tabletexture);
+            i.second->drawtilesprite(tabletexture,viewposition);
         }
 
     }
     sf::Sprite static gettablesprite()
     {
         tablesprite.setTexture(tabletexture.getTexture());
-        tablesprite.setScale(1.0f,1.0f);
-        //tablesprite.rotate(180);
         tablesprite.setPosition(0,0);
         return tablesprite;
     }
+    friend ostream &operator<<(ostream &os, const table &table) {
+        os<<"Table:"<<endl;
+        os<<"pieces: ";
+        for(auto i:table.tablepieces)
+            os<<i.first<<" "<<i.second<<" ";
+        os<<endl<<"tiles: ";
+        for(auto i:table.tabletiles)
+            os<<i.first<<" "<<i.second<<" "<<endl;
+        os<<"viewpoint: "<<table.viewposition<<endl;
+        return os;
+    }
 
+};
+
+
+class game
+{
+private:
+    string playerturn;
+    int winner;
+    int piecediffernce;
+    float positiondifference;
+    string string_pieceselected;
+    string string_tileselected;
+    string string_previous_tileselected;
+    string gamemode;
+    shared_ptr<piece> pieceselected;
+    shared_ptr<tile> tileselected;
+    shared_ptr<tile> previous_tileselected;
+public:
+    table gametable;
+    game(string g):gamemode(g),gametable(g),playerturn("white"),tileselected(nullptr){
+    };
+    virtual ~game(){};
+    void turnfinished()
+    {
+        if(playerturn=="black")
+            playerturn="white";
+    else
+        playerturn="black";
+    }
+    void selecttile(int x,int y)
+    {
+        //select tile
+        if(tileselected!= nullptr)
+        {
+            previous_tileselected=tileselected;
+            string_previous_tileselected=string_tileselected;
+        }
+        if(table::getViewposition()=="white")
+            string_tileselected= fromcoordinatestoname(make_pair((8 - x / tile::gettiledimension()) + 1, y / tile::gettiledimension() + 1));
+        else
+            string_tileselected=fromcoordinatestoname(make_pair((x / tile::gettiledimension()) + 1, y / tile::gettiledimension() + 1));
+        map<std::string, std::shared_ptr<tile>> rx= gametable.getTabletiles();
+        map<std::string, std::shared_ptr<piece>> rx2= gametable.getTablepieces();
+        map<std::string, string> is=gametable.getPieceontile();
+        tileselected=rx[string_tileselected];
+       // cout<<string_pieceselected<<" "<<string_tileselected;
+        if(pieceselected==nullptr) {
+            if(tileselected->getontile()==playerturn)
+            string_pieceselected=is[string_tileselected];
+            pieceselected=rx2[string_pieceselected];
+        }
+        else
+        {
+            if(tileselected->getontile()!= pieceselected->getPiececolor() && playerturn==pieceselected->getPiececolor())
+            {
+                pieceselected->calculatepossiblemoves();
+                for (auto ps:pieceselected->getPossiblesquares())
+                {
+                    //move
+                    if(string_tileselected == ps.first) {//cout<<string_tileselected<<" "<<tileselected<<" "<<previous_tileselected;
+                        //take first
+                        shared_ptr<piece> piecetaken=nullptr;
+                        string piecetakenname;
+                        if(tileselected->getontile()!="empty") {
+                            piecetaken = rx2[is[string_tileselected]];
+                            piecetakenname = is[string_tileselected];
+                        }
+                        pieceselected->setTilepair(make_pair(string_tileselected, tileselected));//1
+                        tileselected->setontile(pieceselected->getPiececolor());//2
+                        previous_tileselected->setontile("empty");//3
+                        if(tileselected->getontile()!="empty")
+                        {
+                            piecetaken=rx2[is[string_tileselected]];
+                            piecetakenname=is[string_tileselected];
+                            table::takepiece(is[string_tileselected]);
+                        }
+                        if(table::check_if_in_check(playerturn))
+                                                {
+                                                    cout<<"P";
+                                                pieceselected->setTilepair(make_pair(string_previous_tileselected,previous_tileselected));cout<<"P";//1
+                                                if(piecetaken!=nullptr) {
+                                                    cout << piecetaken << " " << piecetaken->getPiececolor() << endl;cout<<"P";
+                                                    tileselected->setontile(piecetaken->getPiececolor());cout<<"P";//2
+                                                    table::restorepiece(piecetakenname,piecetaken);
+                                                    //table::modify_pieceontile(string_tileselected, piecetakenname);cout<<"P";//5
+                                                }
+                                                else
+                                                {
+                                                    tileselected->setontile("empty");cout<<"P";//2
+                                                    //table::modify_pieceontile(string_tileselected, "empty");cout<<"P";//5
+                                                }
+                                                previous_tileselected->setontile(pieceselected->getPiececolor());cout<<"P";//3
+                                                //pieceselected->setMoved(false);cout<<"P";//4
+                                                //table::modify_pieceontile(string_previous_tileselected,string_pieceselected);cout<<"P";//6
+                                                pieceselected = nullptr;
+                                                tileselected=nullptr;
+                                                break;
+
+                                            }
+                        pieceselected->setMoved(true);//4
+                        table::modify_pieceontile(string_tileselected, string_pieceselected);//5
+                        table::modify_pieceontile(string_previous_tileselected,"empty");//6
+                        table::calculateallmoves();
+                        pieceselected = nullptr;
+                        tileselected=nullptr;
+                        turnfinished();
+                        break;
+                    }
+                }
+            }
+
+            else if(tileselected->getontile()==playerturn)
+            {
+                //select piece
+                string_pieceselected=is[string_tileselected];
+                pieceselected=rx2[string_pieceselected];
+            }
+        }
+    }
+    friend ostream &operator<<(ostream &os, const game &game) {
+        os << "playerturn: " << game.playerturn << " winner: " << game.winner << " piecediffernce: "
+           << game.piecediffernce << " positiondifference: " << game.positiondifference << " gametable: "
+           << game.gametable << " gamemode: " << game.gamemode;
+        return os;
+    }
 };
 map<string,shared_ptr<piece>> table::tablepieces={};
 map<string,shared_ptr<tile>> table::tabletiles={};
 sf::RenderTexture table::tabletexture={};
 sf::Sprite table::tablesprite={};
-vector <shared_ptr<tile>> table::tilesvector={};
-vector <std::shared_ptr<piece>> piecevector={};
+string table::viewposition;
+map<string,string> table::pieceontile={};
+
+const map<std::string, std::shared_ptr<piece>> &table::getTablepieces() {
+    return tablepieces;
+}
+
+const map<std::string, std::shared_ptr<tile>> &table::getTabletiles() {
+    return tabletiles;
+}
+
+const map<std::string, std::string> &table::getPieceontile() {
+    return pieceontile;
+}
+
+const sf::RenderTexture &table::getTabletexture() {
+    return tabletexture;
+}
+
+const sf::Sprite &table::getTablesprite() {
+    return tablesprite;
+}
+
+const string &table::getViewposition() {
+    return viewposition;
+}
 
 int main() {
+    srand(time(nullptr));
     font.loadFromFile("assets\\font\\OpenSans-Regular.ttf");
     textures::create_all_piece_textures();
-    cout<<fromcoordinatestoname(make_pair(4,4));
-    cout<<fromnametocoordinates("b5").first<<fromnametocoordinates("b5").second<<endl;
-    //cout << getName(i);
-    table("standard");
+    //table("standard");
     // create the window//minw
     // run the program as long as the window is open
     window.setFramerateLimit(60);
+    game g1("standard");
     while (window.isOpen())
     {
         // check all the window's events that were triggered since the last iteration of the loop
@@ -724,37 +1018,34 @@ int main() {
             // "close requested" event: we close the window
             if (event.type == sf::Event::Closed)
                 window.close();
+            else if(event.type==sf::Event::MouseButtonPressed)
+            {
+               if(event.mouseButton.button==0)
+               {
+                    g1.selecttile(event.mouseButton.x,event.mouseButton.y);
+               }
+            }
         }
 
         // clear the window with black color
-
-        //table::tabletexture.clear(sf::Color::Black);
-        // draw everything here...
-        // window.draw(...);
-        //table::drawtable();
-        //window.draw(s);
-
-        //table::tabletexture.display();
-
-// Draw it
-
         window.clear(sf::Color::Black);
+// Draw it
         table::create_table_texture();
-        table::drawtable();
-        window.draw(table::gettablesprite());
-        //window.draw(sprite);
+        g1.gametable.drawtable();
+        window.draw(g1.gametable.gettablesprite());
         // end the current frame
-
         window.display();
         window.clear(sf::Color::Black);
     }
-    //cout<<fromnametocoordinates("b5").first<<" "<<fromnametocoordinates("b5").second<<endl;
     return 0;
 }
 
 
 
-
+//restore
+//if(tileselected->getontile()!="empty")
+//
+//moveback
 
 
 
