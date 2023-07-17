@@ -20,15 +20,38 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="first working version of the tbale(except for castle,en passant,promote and mate/stalemate)">
+    <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="-">
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_bishop.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_king.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_knight.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_pawn.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_queen.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_rook.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_bishop.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_king.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_knight.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_pawn.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_queen.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_rook.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/black_bishop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/black_king.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/black_knight.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/black_pawn.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/black_queen.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/black_rook.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/white_bishop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/white_king.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/white_knight.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/white_pawn.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/white_queen.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/white_rook.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/chessbot.dir/main.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/chessbot.dir/main.cpp.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/chessbot.exe" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/chessbot.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mianbackup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mianbackup.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,12 +74,16 @@
     <option name="minorVersion" value="1.2" />
   </component>
   <component name="ProjectId" id="2RN6fInbiKXEOtdAg4zWkKGDFh2" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
@@ -64,7 +91,7 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/User/CLionProjects/chessbot/CMakeLists.txt&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/User/CLionProjects/chessbot&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -103,7 +130,11 @@
       <workItem from="1688980292741" duration="8105000" />
       <workItem from="1689064954379" duration="16345000" />
       <workItem from="1689235573466" duration="17722000" />
-      <workItem from="1689323064628" duration="18137000" />
+      <workItem from="1689323064628" duration="18227000" />
+      <workItem from="1689411301219" duration="18410000" />
+      <workItem from="1689441467727" duration="7000" />
+      <workItem from="1689441484117" duration="2315000" />
+      <workItem from="1689493396732" duration="10708000" />
     </task>
     <task id="LOCAL-00001" summary="-">
       <created>1687277963435</created>
@@ -126,7 +157,14 @@
       <option name="project" value="LOCAL" />
       <updated>1689269528540</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="-">
+      <created>1689366796001</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1689366796001</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,8 +188,16 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="-" />
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="first working version of the tbale(except for castle,en passant,promote and mate/stalemate)" />
-    <option name="LAST_COMMIT_MESSAGE" value="first working version of the tbale(except for castle,en passant,promote and mate/stalemate)" />
+    <MESSAGE value="-" />
+    <option name="LAST_COMMIT_MESSAGE" value="-" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="CMakeRunConfiguration">
+        <watch expression="this-&gt;whitecolor.a" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>
