@@ -373,6 +373,8 @@ public:
         int currenty = currentposition.second;
         possiblesquares = {};
         for (auto &i: movement) {
+            currentx = currentposition.first;
+            currenty = currentposition.second;
             while (between1and8(currentx + i.first) && between1and8(currenty + i.second)) {
                 string tilename = fromcoordinatestoname(make_pair(currentx + i.first, currenty + i.second));
                 if (totaltiles[tilename]->getontile() == "empty") {
@@ -418,6 +420,8 @@ public:
         int currenty = currentposition.second;
         possiblesquares = {};
         for (auto &i: movement) {
+            currentx = currentposition.first;
+            currenty = currentposition.second;
             while (between1and8(currentx + i.first) && between1and8(currenty + i.second)) {
                 string tilename = fromcoordinatestoname(make_pair(currentx + i.first, currenty + i.second));
                 if (totaltiles[tilename]->getontile() == "empty") {
@@ -556,7 +560,7 @@ public:
                 textures::black_pawn_texture);
     }
 
-    void add_enpassantsquare(const string &s,shared_ptr<tile> t){
+    void add_enpassantsquare(const string &s,shared_ptr<tile> &t){
             enpassantsquare= make_pair(s,t);
     };
 
@@ -612,9 +616,11 @@ private:
                                              {0,  -1},
                                              {1,  0},
                                              {-1, 0}};
+    bool longcastle;
+    bool shortcastle;
 public:
     king(const pair<string, shared_ptr<tile>> &tp,const string &piececolor) : piece(tp,  0,
-                                                                                                         piececolor) {
+                                                                                                         piececolor),shortcastle(false),longcastle(false) {
         piececolor == "white" ? piece_sprite.setTexture(textures::white_king_texture) : piece_sprite.setTexture(
                 textures::black_king_texture);
     }
@@ -632,6 +638,16 @@ public:
                 }
             }
         }
+        if(shortcastle)
+        {
+            //cout<<"SHORT CASTLE"<<fromcoordinatestoname(make_pair(currentx - 2, currenty));
+            possiblesquares[fromcoordinatestoname(make_pair(currentx -2, currenty))]=totaltiles[fromcoordinatestoname(make_pair(currentx - 2, currenty))];
+        }
+        if(longcastle)
+        {
+            //cout<<"LONG CASTLE"<<fromcoordinatestoname(make_pair(currentx +2, currenty));
+            possiblesquares[fromcoordinatestoname(make_pair(currentx +2, currenty))]=totaltiles[fromcoordinatestoname(make_pair(currentx + 2, currenty))];
+        }
     }
 
     ~king() {};
@@ -639,6 +655,15 @@ public:
     friend ostream &operator<<(ostream &os, const king &king) {
         os << static_cast<const piece &>(king);
         return os;
+    }
+
+    void setLongcastle(bool longcastle) {
+
+        king::longcastle = longcastle;
+    }
+
+    void setShortcastle(bool shortcastle) {
+        king::shortcastle = shortcastle;
     }
 };
 
@@ -658,7 +683,7 @@ public:
         if (gamemodetype == "standard") {
             for (int i = 1; i <= 8; i++)
                 for (int j = 1; j <= 8; j++) {
-                    if (rand() % 2 == 3 )
+                    if (rand() % 2 == 1 )
                         viewposition = "white";
                     else
                         viewposition = "black";
@@ -888,7 +913,7 @@ public:
                     i.second->calculatepossiblemoves();//crapa
                     for (auto &ps: i.second->getPossiblesquares()) {
                         if (ps.second == tablepieces["WK"]->getTilepair().second) {
-                            cout << "CHECKW" << endl ;
+                            //cout << "CHECKW" << endl ;
                             check = true;
                         }
                     }
@@ -899,7 +924,7 @@ public:
                     i.second->calculatepossiblemoves();
                     for (auto &ps: i.second->getPossiblesquares()) {
                         if (ps.second == tablepieces["BK"]->getTilepair().second) {
-                            cout << "CHECKB"  << endl;
+                            //cout << "CHECKB"  << endl;
                             check = true;
                         }
                     }
@@ -912,17 +937,17 @@ public:
         pieceontile[t]=p;
     }
 
-    void modify_tablepieces(const string &p,shared_ptr<piece> s)
+    void modify_tablepieces(const string &p,shared_ptr<piece> &s)
     {
         tablepieces[p]=s;
     }
 
-    void modify_tabletiles(const string &t,shared_ptr<piece> s)
+    void modify_tabletiles(const string &t,shared_ptr<piece> &s)
     {
         tablepieces[t]=s;
     }
 
-    void modify_backuppieces(const string &t,shared_ptr<piece> s)
+    void modify_backuppieces(const string &t,shared_ptr<piece> &s)
     {
         backuppieces[t]=s;
     }
@@ -989,6 +1014,188 @@ public:
         }
         calculateallmoves();
     }
+
+    void check_for_castle(const string &pt)
+    {
+        if(pt=="white")
+        {
+            if(tablepieces["WK"]->getMoved()== false)
+            {
+                int fin;int start;
+                if(tablepieces["lWR"]->getMoved()==false)
+                {
+                     fin=tablepieces["lWR"]->getTilepair().second->getcoordinates().first-1;
+                     start=tablepieces["WK"]->getTilepair().second->getcoordinates().first+1;
+                    bool valid=true;
+                    for(int i=start;i<=fin;i++)
+                    {
+                        if(tabletiles[fromcoordinatestoname(make_pair(i,1))]->getontile()!="empty")
+                            valid= false;
+                    }
+                    for(int g=start; g <= start+2; g++)
+                    {
+                            for (auto &i: tablepieces)
+                                if (i.second->getPiececolor() != pt) {
+                                    i.second->calculatepossiblemoves();//crapa
+                                    for (auto &ps: i.second->getPossiblesquares()) {
+                                        if (ps.first == fromcoordinatestoname(make_pair(g,1))) {
+                                            valid= false;
+                                        }
+                                    }
+                                }
+                    }
+                    if(valid)
+                        dynamic_pointer_cast<king>(tablepieces["WK"])->setLongcastle(true);
+                    else
+                        dynamic_pointer_cast<king>(tablepieces["WK"])->setLongcastle(false);
+                }
+                if(tablepieces["rWR"]->getMoved()== false)
+                {
+                    start=tablepieces["rWR"]->getTilepair().second->getcoordinates().first+1;
+                    fin=tablepieces["WK"]->getTilepair().second->getcoordinates().first-1;
+                    bool valid=true;
+                    for(int i=start;i<=fin;i++)
+                    {
+                        if(tabletiles[fromcoordinatestoname(make_pair(i,1))]->getontile()!="empty")
+                            valid= false;
+                    }
+                    for(int g=start; g <= start+2; g++)
+                    {
+                        for (auto &i: tablepieces)
+                            if (i.second->getPiececolor() != pt) {
+                                i.second->calculatepossiblemoves();//crapa
+                                for (auto &ps: i.second->getPossiblesquares()) {
+                                    if (ps.first == fromcoordinatestoname(make_pair(g,1))) {
+                                        valid=false;
+                                    }
+                                }
+                            }
+                    }
+                    if(valid)
+                        dynamic_pointer_cast<king>(tablepieces["WK"])->setShortcastle(true);
+                    else
+                    {
+                        dynamic_pointer_cast<king>(tablepieces["WK"])->setShortcastle(false);
+                    }
+                }
+
+            }
+        }
+        else
+        {
+            if(tablepieces["BK"]->getMoved()== false)
+            {
+                int fin;int start;
+                if(tablepieces["lBR"]->getMoved()==false)
+                {
+                    fin=tablepieces["lBR"]->getTilepair().second->getcoordinates().first-1;
+                    start=tablepieces["BK"]->getTilepair().second->getcoordinates().first+1;
+                    bool valid=true;
+                    for(int i=start;i<=fin;i++)
+                    {
+                        if(tabletiles[fromcoordinatestoname(make_pair(i,8))]->getontile()!="empty")
+                            valid= false;
+                    }
+                    for(int g=start; g <= start+2; g++)
+                    {
+                        for (auto &i: tablepieces)
+                            if (i.second->getPiececolor() != pt) {
+                                i.second->calculatepossiblemoves();//crapa
+                                for (auto &ps: i.second->getPossiblesquares()) {
+                                    if (ps.first == fromcoordinatestoname(make_pair(g,8))) {
+                                        valid= false;
+                                    }
+                                }
+                            }
+                    }
+                    if(valid)
+                        dynamic_pointer_cast<king>(tablepieces["BK"])->setLongcastle(true);
+                    else
+                        dynamic_pointer_cast<king>(tablepieces["BK"])->setLongcastle(false);
+                }
+                if(tablepieces["rBR"]->getMoved()== false)
+                {
+                    start=tablepieces["rBR"]->getTilepair().second->getcoordinates().first+1;
+                    fin=tablepieces["BK"]->getTilepair().second->getcoordinates().first-1;
+                    bool valid=true;
+                    for(int i=start;i<=fin;i++)
+                    {
+                        if(tabletiles[fromcoordinatestoname(make_pair(i,8))]->getontile()!="empty")
+                            valid= false;
+                    }
+                    for(int g=start; g <= start+2; g++)
+                    {
+                        for (auto &i: tablepieces)
+                            if (i.second->getPiececolor() != pt) {
+                                i.second->calculatepossiblemoves();//crapa
+                                for (auto &ps: i.second->getPossiblesquares()) {
+                                    if (ps.first == fromcoordinatestoname(make_pair(g,8))) {
+                                        valid=false;
+                                    }
+                                }
+                            }
+                    }
+                    if(valid)
+                        dynamic_pointer_cast<king>(tablepieces["BK"])->setShortcastle(true);
+                    else
+                    {
+                        dynamic_pointer_cast<king>(tablepieces["BK"])->setShortcastle(false);
+                    }
+                }
+
+            }
+        }
+    };
+
+    void short_castle(const string &pt)
+    {
+        if(pt=="white") {
+            string newtile = fromcoordinatestoname(
+                    make_pair(tablepieces["WK"]->getTilepair().second->getcoordinates().first + 1,
+                              tablepieces["WK"]->getTilepair().second->getcoordinates().second));
+            tablepieces["rWR"]->getTilepair().second->setontile("empty");
+            pieceontile[tablepieces["rWR"]->getTilepair().first] = "empty";
+            tablepieces["rWR"]->setTilepair(make_pair(newtile, tabletiles[newtile]));
+            tablepieces["rWR"]->getTilepair().second->setontile("white");
+            pieceontile[newtile] = "rWR";
+        }
+        else
+        {
+            string newtile = fromcoordinatestoname(
+                    make_pair(tablepieces["BK"]->getTilepair().second->getcoordinates().first + 1,
+                              tablepieces["BK"]->getTilepair().second->getcoordinates().second));
+            tablepieces["rBR"]->getTilepair().second->setontile("empty");
+            pieceontile[tablepieces["rBR"]->getTilepair().first] = "empty";
+            tablepieces["rBR"]->setTilepair(make_pair(newtile, tabletiles[newtile]));
+            tablepieces["rBR"]->getTilepair().second->setontile("black");
+            pieceontile[newtile] = "rBR";
+        }
+    }
+
+    void long_castle(const string &pt)
+    {
+        if(pt=="white") {
+            string newtile = fromcoordinatestoname(
+                    make_pair(tablepieces["WK"]->getTilepair().second->getcoordinates().first - 1,
+                              tablepieces["WK"]->getTilepair().second->getcoordinates().second));
+            tablepieces["lWR"]->getTilepair().second->setontile("empty");
+            pieceontile[tablepieces["lWR"]->getTilepair().first] = "empty";
+            tablepieces["lWR"]->setTilepair(make_pair(newtile, tabletiles[newtile]));
+            tablepieces["lWR"]->getTilepair().second->setontile("white");
+            pieceontile[newtile] = "lWR";
+        }
+        else
+        {
+            string newtile = fromcoordinatestoname(
+                    make_pair(tablepieces["BK"]->getTilepair().second->getcoordinates().first - 1,
+                              tablepieces["BK"]->getTilepair().second->getcoordinates().second));
+            tablepieces["lBR"]->getTilepair().second->setontile("empty");
+            pieceontile[tablepieces["lBR"]->getTilepair().first] = "empty";
+            tablepieces["lBR"]->setTilepair(make_pair(newtile, tabletiles[newtile]));
+            tablepieces["lBR"]->getTilepair().second->setontile("black");
+            pieceontile[newtile] = "lBR";
+        }
+    }
 };
 
 
@@ -1007,7 +1214,6 @@ private:
     shared_ptr<piece> pieceselected;
     shared_ptr<tile> tileselected;
     shared_ptr<tile> previous_tileselected;
-
     sf::RectangleShape menu;
     bool promotionmenuopened;
     int game_dimension_x;
@@ -1033,6 +1239,7 @@ public:
                                         (0.75f*float(gametable.getTableDimension()/8)/white_promotion_sprite.getTexture()->getSize().y));
         black_promotion_sprite.setScale((3.0f*float(gametable.getTableDimension()/8)/white_promotion_sprite.getTexture()->getSize().x),
                                         (0.75f*float(gametable.getTableDimension()/8)/white_promotion_sprite.getTexture()->getSize().y));
+        cout<<playerturn<<" turn" <<movenumber<<endl;
     };
 
     virtual ~game() {};
@@ -1062,7 +1269,7 @@ public:
                     prevtile->setontile("empty");
                     if (!gametable.check_if_in_check(playerturn))
                     {
-                       /* cout<<possiblepiece.first<<" "<<possiblemove.first<<endl;*/
+                    //    cout<<possiblepiece.first<<" "<<possiblemove.first<<endl;
                         can_avoid_check = true;
                         restore_game_from_history(history[movenumber], movenumber);
                         break;
@@ -1094,19 +1301,19 @@ public:
         map <string,shared_ptr<tile>> tt=gametable.getTabletiles();
         if(tt.find(fromcoordinatestoname(make_pair(tileselected->getcoordinates().first + 1, tileselected->getcoordinates().second))) != tt.end() &&
                 pot[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first + 1, tileselected->getcoordinates().second))] != "empty"
-        )
+        )//pion in dreapta
         {
             shared_ptr<piece> n1pawn  = tp[pot[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first + 1, tileselected->getcoordinates().second))]];
             if(auto c= dynamic_pointer_cast<pawn>(n1pawn))
             {
-                if(playerturn=="white") {
+                if(pieceselected->getPiececolor()=="white" && n1pawn->getPiececolor()=="black") {
                     c->add_enpassantsquare(fromcoordinatestoname(
                                                    make_pair(tileselected->getcoordinates().first, tileselected->getcoordinates().second - 1)),
                                            tt[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first,
                                                                               tileselected->getcoordinates().second -
                                                                               1))]);
                 }
-                    else {
+                    else  if(pieceselected->getPiececolor()=="black" && n1pawn->getPiececolor()=="white"){
                     c->add_enpassantsquare(fromcoordinatestoname(
                                                    make_pair(tileselected->getcoordinates().first, tileselected->getcoordinates().second + 1)),
                                            tt[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first,
@@ -1117,19 +1324,21 @@ public:
         }
         if(tt.find(fromcoordinatestoname(make_pair(tileselected->getcoordinates().first - 1, tileselected->getcoordinates().second))) != tt.end() &&
                 pot[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first - 1, tileselected->getcoordinates().second))] != "empty"
-                ) {
+                )//pion in stanga
+          {
+
             shared_ptr<piece> n2pawn = tp[pot[fromcoordinatestoname(
                     make_pair(tileselected->getcoordinates().first - 1, tileselected->getcoordinates().second))]];
             if (auto c = dynamic_pointer_cast<pawn>(n2pawn)) {
                 c->add_enpassantsquare(fromcoordinatestoname(make_pair( tileselected->getcoordinates().first , tileselected->getcoordinates().second+1)),tt[fromcoordinatestoname(make_pair( tileselected->getcoordinates().first , tileselected->getcoordinates().second+1))]);
-                if(playerturn=="white") {
+                if(pieceselected->getPiececolor()=="white" && n2pawn->getPiececolor()=="black") {
                     c->add_enpassantsquare(fromcoordinatestoname(
                                                    make_pair(tileselected->getcoordinates().first, tileselected->getcoordinates().second - 1)),
                                            tt[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first,
                                                                               tileselected->getcoordinates().second -
                                                                               1))]);
                 }
-                else {
+                else if(pieceselected->getPiececolor()=="black" && n2pawn->getPiececolor()=="white"){
                     c->add_enpassantsquare(fromcoordinatestoname(
                                                    make_pair(tileselected->getcoordinates().first, tileselected->getcoordinates().second + 1)),
                                            tt[fromcoordinatestoname(make_pair(tileselected->getcoordinates().first,
@@ -1176,8 +1385,14 @@ public:
         map <string,string> pot=gametable.getPieceontile();
         map <string,shared_ptr<piece>> tp=gametable.getTablepieces();
         map <string,shared_ptr<tile>> tt=gametable.getTabletiles();
-        string_pieceselected = pot[string_tileselected];
-        pieceselected = tp[string_pieceselected];
+        if(pot[string_tileselected]!="empty")
+        {
+            if(tp[pot[string_tileselected]]->getPiececolor()==playerturn) {
+                string_pieceselected = pot[string_tileselected];
+                pieceselected = tp[string_pieceselected];
+            }
+        }
+
     }
 
     void executemovepart1()
@@ -1215,10 +1430,10 @@ public:
         pieceselected->setMoved(true);
         gametable.modify_pieceontile(string_tileselected,string_pieceselected);pot[string_tileselected]=string_pieceselected;
         gametable.modify_pieceontile(string_previous_tileselected,"empty");pot[string_previous_tileselected]="empty";
-        for(auto i:tp)
+        for(auto &i:tp)
             if(i.second->getPiececolor()!=playerturn)
                 gametable.calculateallmoves();
-        for (auto i:tt)
+        for (auto &i:tt)
             i.second->setHighlighted(false);
         tileselected->setHighlighted(true);
         previous_tileselected->setHighlighted(true);
@@ -1227,20 +1442,21 @@ public:
         history.push_back(pot);
         movenumber+=1;
         turnfinished();
+        cout<<playerturn<<" turn" <<movenumber<<endl;
     }
 
     void clickgame(int x,int y)
     {
-        if(x<game_dimension_y && y<game_dimension_y)
-            if(!promotionmenuopened)
-                clicktile(x,y);
+        if(promotionmenuopened)
+            clickpromotion(x,y);
         else
         {
-            clickpromotion(x,y);
-        }
-        else if(x>game_dimension_y && y<game_dimension_y && x<game_dimension_x)
-        {
+            if(x<game_dimension_y && y<game_dimension_y)
+                clicktile(x,y);
+            else if(x>game_dimension_y && y<game_dimension_y && x<game_dimension_x)
+            {
 
+            }
         }
     }
 
@@ -1251,15 +1467,20 @@ public:
         pair<int,int> tilecoords=tt[string_tileselected]->getcoordinates();
         float piecejump=white_promotion_sprite.getGlobalBounds().width/4;
         float promstart=white_promotion_sprite.getPosition().x;
+        bool promoted= false;
         if(y>white_promotion_sprite.getPosition().y && y<white_promotion_sprite.getPosition().y+unit)
         {
-            if (x > promstart && x < promstart+piecejump) { promote("queen"); }
-            else if(x > promstart+piecejump && x < promstart+2*piecejump) { promote("bishop"); }
-            else if(x > promstart+2*piecejump && x < promstart+3*piecejump) { promote("knight");}
-            else if(x > promstart+3*piecejump && x < promstart+4*piecejump) { promote("rook"); }
-            executemovepart2();
-            //gamestate=check_for_checkmate_or_stalemate();
+            if (x > promstart && x < promstart+piecejump) { promote("queen");promoted=true; }
+            else if(x > promstart+piecejump && x < promstart+2*piecejump) { promote("bishop");promoted=true; }
+            else if(x > promstart+2*piecejump && x < promstart+3*piecejump) { promote("knight");promoted=true;}
+            else if(x > promstart+3*piecejump && x < promstart+4*piecejump) { promote("rook");promoted=true; }
         }
+        if(promoted) {
+            executemovepart2();
+            check_for_checkmate_or_stalemate();
+        }
+        else
+            restore_game_from_history(history[movenumber],movenumber);
             promotionmenuopened= false;
     }
 
@@ -1287,7 +1508,21 @@ public:
                             redo_invalid_move();
                             break;
                         }
-
+                        if(auto x= dynamic_pointer_cast<king>(pieceselected))
+                        {
+                            if(tileselected->getcoordinates().first-previous_tileselected->getcoordinates().first==2)
+                            {
+                                //cout<<"STARTING LONG";
+                                gametable.long_castle(playerturn);
+                                dynamic_pointer_cast<king>(tp["WK"])->setLongcastle(false);
+                            }
+                            else if (tileselected->getcoordinates().first-previous_tileselected->getcoordinates().first==-2)
+                            {
+                                //cout<<"STARTING SHORT";
+                                gametable.short_castle(playerturn);
+                                dynamic_pointer_cast<king>(tp["WK"])->setLongcastle(false);
+                            }
+                        }
                         if(auto x= dynamic_pointer_cast<pawn>(pieceselected)) {
                                 if (abs(tileselected->getcoordinates().second -
                                         previous_tileselected->getcoordinates().second) == 1 &&
@@ -1310,7 +1545,6 @@ gametable.modify_pieceontile(fromcoordinatestoname(
                                                           tileselected->getcoordinates().second + 1)),"empty");
                                     }
                                     map <string,shared_ptr<piece>> tp=gametable.getTablepieces();
-                                    cout<<tp["dBP"]<<endl;
                                 }
 
                             if(abs(tileselected->getcoordinates().second-previous_tileselected->getcoordinates().second)!=1)
@@ -1325,16 +1559,14 @@ gametable.modify_pieceontile(fromcoordinatestoname(
                                 break;
                             }
                         }
-cout<<movenumber;
                         executemovepart2();
-                        cout<<movenumber;
-                        for(auto i:history[movenumber])
-                        cout<<i.first<<" "<<i.second<<endl;
                         check_for_checkmate_or_stalemate();
+                        gametable.check_for_castle(playerturn);
                         break;
                     }
                 }
             } else if (tileselected->getontile() == playerturn) {
+                pieceselected==nullptr;
                 selectpiece();
             }
         }
@@ -1431,7 +1663,6 @@ int main() {
         window.display();
         window.clear(sf::Color::Black);
     }
-
     return 0;
 }
 

@@ -21,31 +21,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="-">
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_bishop.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_king.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_knight.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_pawn.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_queen.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/black_rook.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_bishop.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_king.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_knight.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_pawn.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_queen.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/piece_icons/white_rook.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/black_bishop.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/black_king.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/black_knight.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/black_pawn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/black_queen.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/black_rook.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/white_bishop.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/white_king.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/white_knight.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/white_pawn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/white_queen.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/white_rook.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/chessbot.dir/main.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/chessbot.dir/main.cpp.obj" afterDir="false" />
@@ -135,6 +111,9 @@
       <workItem from="1689441467727" duration="7000" />
       <workItem from="1689441484117" duration="2315000" />
       <workItem from="1689493396732" duration="10708000" />
+      <workItem from="1689584234982" duration="32781000" />
+      <workItem from="1689670692852" duration="18515000" />
+      <workItem from="1689754260799" duration="11286000" />
     </task>
     <task id="LOCAL-00001" summary="-">
       <created>1687277963435</created>
@@ -164,7 +143,14 @@
       <option name="project" value="LOCAL" />
       <updated>1689366796001</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="-added en passant,promotion and tile highlights">
+      <created>1689625113702</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1689625113702</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -191,7 +177,8 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="first working version of the tbale(except for castle,en passant,promote and mate/stalemate)" />
     <MESSAGE value="-" />
-    <option name="LAST_COMMIT_MESSAGE" value="-" />
+    <MESSAGE value="-added en passant,promotion and tile highlights" />
+    <option name="LAST_COMMIT_MESSAGE" value="-added en passant,promotion and tile highlights" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
