@@ -20,7 +20,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="-">
+    <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="-fixed enpassant and castle bugs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
@@ -74,6 +74,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -118,7 +119,46 @@
       <workItem from="1690188519725" duration="11117000" />
       <workItem from="1690212523699" duration="867000" />
       <workItem from="1690284301669" duration="7832000" />
-      <workItem from="1690362125330" duration="9833000" />
+      <workItem from="1690362125330" duration="9930000" />
+      <workItem from="1690451233836" duration="1189000" />
+      <workItem from="1690477178461" duration="4223000" />
+      <workItem from="1690533898058" duration="7735000" />
+      <workItem from="1690561103053" duration="787000" />
+      <workItem from="1690621132064" duration="18335000" />
+      <workItem from="1691052593935" duration="13793000" />
+      <workItem from="1691140794073" duration="7401000" />
+      <workItem from="1691222787196" duration="16769000" />
+      <workItem from="1691312611227" duration="9303000" />
+      <workItem from="1691397134822" duration="14866000" />
+      <workItem from="1691482258179" duration="11370000" />
+      <workItem from="1691601807695" duration="2689000" />
+      <workItem from="1691663376894" duration="6501000" />
+      <workItem from="1691747061348" duration="5670000" />
+      <workItem from="1691829375894" duration="6778000" />
+      <workItem from="1691917795138" duration="6861000" />
+      <workItem from="1691999733164" duration="10203000" />
+      <workItem from="1692088266325" duration="7055000" />
+      <workItem from="1692176513224" duration="2386000" />
+      <workItem from="1692264820259" duration="4420000" />
+      <workItem from="1692348136985" duration="11603000" />
+      <workItem from="1692436150150" duration="13146000" />
+      <workItem from="1692526563558" duration="6622000" />
+      <workItem from="1692609678585" duration="8786000" />
+      <workItem from="1692698083375" duration="5262000" />
+      <workItem from="1692780534418" duration="9236000" />
+      <workItem from="1692888747345" duration="5915000" />
+      <workItem from="1692954332124" duration="43000" />
+      <workItem from="1692954486288" duration="3230000" />
+      <workItem from="1693043854145" duration="5738000" />
+      <workItem from="1693124833454" duration="772000" />
+      <workItem from="1693244319396" duration="373000" />
+      <workItem from="1693823254040" duration="10000000" />
+      <workItem from="1693906613759" duration="5045000" />
+      <workItem from="1693991131507" duration="12193000" />
+      <workItem from="1694168091822" duration="4681000" />
+      <workItem from="1694529857118" duration="7171000" />
+      <workItem from="1694602716275" duration="12728000" />
+      <workItem from="1694631659766" duration="1000" />
     </task>
     <task id="LOCAL-00001" summary="-">
       <created>1687277963435</created>
@@ -162,7 +202,14 @@
       <option name="project" value="LOCAL" />
       <updated>1689782376964</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="-fixed enpassant and castle bugs">
+      <created>1690389125793</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1690389125793</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -190,7 +237,8 @@
     <MESSAGE value="first working version of the tbale(except for castle,en passant,promote and mate/stalemate)" />
     <MESSAGE value="-added en passant,promotion and tile highlights" />
     <MESSAGE value="-" />
-    <option name="LAST_COMMIT_MESSAGE" value="-" />
+    <MESSAGE value="-fixed enpassant and castle bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="-fixed enpassant and castle bugs" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
