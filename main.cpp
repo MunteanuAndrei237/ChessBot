@@ -703,6 +703,7 @@ private:
         shared_ptr<piece> pieceTaken;
         shared_ptr<tile> tileSelected;
         shared_ptr<tile> previousTileSelected;
+        pair <bool,vector<shared_ptr<pawn>>> enpassantpair;
         map<std::string, std::shared_ptr<piece>> tablePieces;
         map<std::string, std::shared_ptr<tile>> tableTiles;
         map<std::string, std::string> piecesOnTiles;
@@ -712,7 +713,7 @@ private:
         int table_dimension;
         shared_ptr<game> gameref;
         map<std::string, std::shared_ptr<piece>> backuppieces;
-        pair <bool,vector<shared_ptr<pawn>>> enpassantpair;
+
         int movenumber;
         string playerTurn;
     public:
@@ -721,7 +722,7 @@ private:
             if (gamemodetype == "standard") {
                 for (int i = 1; i <= 8; i++)
                     for (int j = 1; j <= 8; j++) {
-                        if (rand() % 2 == 1 )
+                        if (rand() % 2==0 )
                             viewposition = "white";
                         else
                             viewposition = "black";
@@ -920,9 +921,10 @@ private:
         }
 
         ~table() {};
-
         bool  checkIfInCheck() {
+
     string king;
+
     if (playerTurn == "white")
         king="WK";
     else if (playerTurn == "black")
@@ -939,12 +941,12 @@ private:
     }
             return false;
         }
-/*
+
         void  calculateallmoves() {
             for (auto &j: tablePieces) {
                 j.second->calculatePossibleMoves();
             }
-        }*/
+        }
 
         void takepiece(const string &piece_name) {
             tablePieces.erase(piece_name);
@@ -1021,9 +1023,17 @@ private:
             return true;
         }
 
-        void undoEntireMove()
+        void undoEntireMove(vector <string> f,const string& sps,const string& sts,const string& spts,const string& spt,shared_ptr<piece> ps,shared_ptr<piece> pt,shared_ptr<tile> ts,shared_ptr<tile> pts)
         {
-            cout<<"incepe"<<flags[2];
+            flags=f;
+            stringTileSelected=sts;
+            stringPieceSelected=sps;
+            stringPreviousTileSelected=spts;
+            stringPieceTaken=spt;
+            tileSelected=ts;
+            pieceSelected=ps;
+            previousTileSelected=pts;
+            pieceTaken=pt;
             if(pieceTaken==nullptr)
             {
                 piecesOnTiles[stringTileSelected]="empty";
@@ -1071,28 +1081,29 @@ private:
             {
                 takepiece(stringPieceSelected);
                 tablePieces[stringPieceSelected]=make_shared<pawn>(pawn(make_pair(stringPreviousTileSelected, previousTileSelected), pieceSelected->getPiececolor()));;
-            }
+            }/*
             if(flags[3]!="n")
             {
-                cout<<flags[3].substr(0,3)<<" "<<flags[3].substr(3,2);
                 enpassantpair.first=true;
                 enpassantpair.second.push_back(dynamic_pointer_cast<pawn>(tablePieces[flags[3].substr(0,3)]));
                 dynamic_pointer_cast<pawn>(tablePieces[flags[3].substr(0,3)])->add_enpassantsquare(flags[3].substr(3,2),tableTiles[flags[3].substr(3,2)]);
-            }
+            }*/
             piecesOnTiles[stringPreviousTileSelected]=stringPieceSelected;
-            if(playerTurn=="white")
-                --movenumber;
             !playerTurn;
-
         }
 
-        void executevirtualmove()
+        bool executevirtualmove()
         {
             flags={"n","n","n"};
             executemovepart1();
             if (checkIfInCheck())
+            {
+
                 undoInvalidMove();
+                return false;
+            }
             if (check_and_treat_pawn_exceptions()) {
+
                 promote("queen");
             }
             execute_castle();
@@ -1100,6 +1111,7 @@ private:
             virtualexecutemovepart2();
             turnfinished();
             check_for_checkmate_or_stalemate();
+            return true;
         }
         //increasemovenumber()
         void checkenpassant()
@@ -1115,7 +1127,7 @@ private:
                         if (pieceSelected->getPiececolor() != npawn->getPiececolor() ) {
                             dynamic_pointer_cast<pawn>(npawn)->add_enpassantsquare(fromcoordinatestoname(make_pair(tileSelected->getcoordinates().first, tileSelected->getcoordinates().second + colordir[playerTurn])),
                                                                                    tableTiles[fromcoordinatestoname(make_pair(tileSelected->getcoordinates().first, tileSelected->getcoordinates().second + colordir[playerTurn]))]);
-                        flags[3]=piecesOnTiles[i]+fromcoordinatestoname(make_pair(tileSelected->getcoordinates().first, tileSelected->getcoordinates().second + colordir[playerTurn]));
+                        //flags[3]=piecesOnTiles[i]+fromcoordinatestoname(make_pair(tileSelected->getcoordinates().first, tileSelected->getcoordinates().second + colordir[playerTurn]));
                         enpassantpair.first=true;
                         enpassantpair.second.push_back(dynamic_pointer_cast<pawn>(npawn));
                         }
@@ -1234,6 +1246,7 @@ private:
         }
 
         bool watch_for_check() {
+
             if (checkIfInCheck()) {
                 if (playerTurn == "white")
                     tablePieces["WK"]->getTilepair().second->setCheckhisghlight(true);
@@ -1451,7 +1464,7 @@ private:
                         }
                         possiblepiece.second->setTilepair(make_pair(possiblemove.first, possiblemove.second));
                         possiblemove.second->setontile(possiblepiece.second->getPiececolor());
-                        possiblepiece.second->getTilepair().second->setontile("empty");
+                        prevtile.second->setontile("empty");
                         if (!checkIfInCheck())
                         {
                             possiblepiece.second->setTilepair(make_pair(prevtile.first, prevtile.second));
@@ -1487,7 +1500,7 @@ private:
                     return "p";
             }
             if(can_avoid_check==false) {
-                cout<<"GAME DONE";
+                //cout<<"GAME DONE";
                 if(in_check==false)
                 {
                     return "draw";
@@ -1506,49 +1519,108 @@ private:
             check_for_checkmate_or_stalemate();
         }
     };
+
     table gametable;
-    class bot{
+    class bot {
     private:
         int depth;
-        table& gametable;
+        table &gametable;
         float piecedifference;
         float positiondifference;
-        string v_string_pieceselected;
-        string v_string_tileselected;
-        string v_string_previous_tileselected;
-        string v_string_piece_taken;
-        shared_ptr<piece> v_pieceselected;
-        shared_ptr<piece> v_piecetaken;
-        shared_ptr<tile> v_tileselected;
-        shared_ptr<tile> v_previous_tileselected;
+        int number;
+        vector<string> flagss;
+        string stringPieceTakenn;
+        shared_ptr<piece> pieceTakenn;
+        string gameStatus;
+        float eval;
+        pair<float, float> resultOfRecursion;
+        bool passed = false;
+        map<string, bool> colorToBool;
+        vector<int> v={-1,3,5,8,-6,-4,7,8};
+        int indice=0;
     public:
-        bot(table t):gametable(t),depth(4),v_pieceselected(nullptr),v_piecetaken(nullptr),v_tileselected(nullptr),v_previous_tileselected(nullptr){}
+        bool minMaxOrMaxMin;
+
+        bot(table &t) : gametable(t), depth(2), number(0), piecedifference(0), gameStatus(""), colorToBool(
+                {{"white", 1},
+                 {"black", 0}}) {}
+
+        void freef()
+        {
+            minMaxOrMaxMin=0;
+            cout<<minMaxOrMaxMin<<"COL"<<endl;
+        }
+        pair<float,float> rec(int d,float mi,float ma,float alpha,float beta) {
+            d--;
+            float minn = 100;
+            float maxx = 0;
+            for (int i = 0; i < 1; i++)
+            {
+                for (int j = 1; j >= 0; j--) {
+                    if (d == 0) {
+                        eval = v[indice];
+                        indice++;
+                        cout << eval << " ";
+                        if (eval > maxx)
+                            maxx = eval;
+                        return make_pair(minn,maxx);
+                    } else {
+                        resultOfRecursion = rec(d, minn, maxx, alpha, beta);
+                        if (d % 2 == minMaxOrMaxMin) {
+                            eval = resultOfRecursion.first;
+                            if (eval > maxx)
+                                maxx = eval;
+                            beta = min(eval, beta);
+                            if (beta <= alpha) {
+                                cout << "BREAK DIN FOR" << endl;
+                                return make_pair(minn,maxx);
+                            }
+                        } else if (d % 2 !=minMaxOrMaxMin) {
+
+                            eval = resultOfRecursion.second;
+                            if (eval < minn)
+                                minn = eval;
+                            alpha = max(eval, alpha);
+                            if (beta <= alpha)
+                            {
+                            cout << "BREAK DIN FOR" << endl;
+                                return make_pair(minn,maxx);
+                            }
+                        }
+                        //cout << endl<<alpha<<" "<<beta<<endl;
+                    }
+                }
+        }
+            return make_pair(minn,maxx);
+        }
         void calculatePieceDifference()
         {
+            piecedifference=0;
             for(auto &i:gametable.tablePieces)
                 if(i.second->getPiececolor()=="white")
                     piecedifference+=i.second->getValue();
-            else
-                piecedifference-=i.second->getValue();
+                else
+                    piecedifference-=i.second->getValue();
         }
         float calculatePiecePositionValue()
         {
-            int piecePositionValue=0;
+            float piecePositionValue=0;
             for(auto &i:gametable.tablePieces)
                     for(int j=0;j<i.second->getPossiblesquares().size();j++)
                         if(i.second->getPiececolor()=="white")
                             piecePositionValue+=0.2;
                         else
-                            piecedifference-=i.second->getValue();
-                        return calculatePiecePositionValue();
+                            piecePositionValue-=0.2;
+                        return piecePositionValue;
         }
         void evaluateposition()
         {
-            if(gametable.check_for_checkmate_or_stalemate()=="white_won")
+            gameStatus=gametable.check_for_checkmate_or_stalemate();
+            if(gameStatus=="white_won")
                 positiondifference=1000;
-            else  if(gametable.check_for_checkmate_or_stalemate()=="black_won")
+            else  if(gameStatus=="black_won")
                 positiondifference=-1000;
-            else if(gametable.check_for_checkmate_or_stalemate()=="draw")
+            else if(gameStatus=="draw")
                 positiondifference=0;
             else
             {
@@ -1556,28 +1628,89 @@ private:
                 positiondifference=piecedifference+calculatePiecePositionValue();
             }
         }
-        void searchBestMove(int depth)
+        void searchBestMove(int d)
         {
-            int number=0;
+            sf::Clock c1;
+            d*=2;
+            minMaxOrMaxMin=colorToBool[gametable.playerTurn];
+            cout<<minMaxOrMaxMin<<"COL"<<endl;
+            if(minMaxOrMaxMin)
+                cout<<searchBestMoveLoop(d,1001,-1001).second;
+            else
+                cout<<searchBestMoveLoop(d,1001,-1001).first;
+            cout<<"GATA"<<number<<endl;
+            cout<<c1.getElapsedTime().asMilliseconds();
+        }
+        pair<float,float> searchBestMoveLoop(int d,float minn,float maxx)
+        {
+            float min=1001;
+            float max=-1001;
+            d--;
+            string stringPrevTile;
+            shared_ptr<tile> PrevTile;
+            map<string,shared_ptr<piece>> tp=gametable.tablePieces;
+            for (auto &i:tp) {
+                if (i.second->getPiececolor() == gametable.playerTurn) {
+                    i.second->calculatePossibleMoves();
+                    map<string, shared_ptr<tile>> ty = i.second->getPossiblesquares();
+                    for (auto &j: ty) {
+                        //cout<<"EXECUTE";
+                        gametable.pieceSelected = i.second;
+                        gametable.stringPieceSelected = i.first;
+                        gametable.previousTileSelected = i.second->getTilepair().second;
+                        gametable.stringPreviousTileSelected = i.second->getTilepair().first;
+                        gametable.tileSelected = j.second;
+                        gametable.stringTileSelected = j.first;
+                        stringPrevTile=i.second->getTilepair().first;
+                        PrevTile=i.second->getTilepair().second;
+                        if (gametable.tileSelected->getontile() != gametable.playerTurn &&
+                            gametable.tileSelected->getontile() != "empty") {
+                            stringPieceTakenn = gametable.piecesOnTiles[gametable.stringTileSelected];
+                            pieceTakenn = gametable.tablePieces[stringPieceTakenn];
+                        } else {
+                            pieceTakenn = nullptr;
+                        }
+                        //cout << " " << i.first << " " << i.second->getTilepair().first << " "<< gametable.stringTileSelected<<endl;
+                        if (gametable.executevirtualmove()) {
+                            flagss = gametable.flags;
+                            if (d == 0) {
+                                {
+                                    evaluateposition();
+                                    if(abs(positiondifference)<0.1)
+                                        positiondifference=0;
+                                    cout<<positiondifference<<" ";
+                                    number++;
+                                }
+                            } else {
+                                resultOfRecursion=searchBestMoveLoop(d,min,max);
+                                if(d%2==minMaxOrMaxMin)
+                                {
+                                    positiondifference=resultOfRecursion.first;
+                                }
+                                else
+                                {
+                                    positiondifference=resultOfRecursion.second;
+                                }
+                               cout<<endl<<positiondifference<<endl;
+                            }
+                            if(d%2!=minMaxOrMaxMin)
+                            {
+                                if(positiondifference<min)
+                                    min=positiondifference;
+                            }
+                            else
+                            {
+                                if(positiondifference>max)
+                                    max=positiondifference;
+                            }
 
-            for (auto i:gametable.tablePieces) {
-                gametable.pieceSelected=i.second;
-                gametable.stringPieceSelected=i.first;
-                gametable.previousTileSelected=i.second->getTilepair().second;
-                gametable.stringPreviousTileSelected=i.second->getTilepair().first;
-                for (auto j: i.second->getPossiblesquares()) {
-                    gametable.tileSelected=j.second;
-                    gametable.stringTileSelected=j.first;
-                    gametable.executevirtualmove();
-                    depth--;
-                    if (depth == 1)
-                        evaluateposition();
-                    if (depth != 1)
-                        searchBestMove(depth);
-                    //undo move
+                            gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
+                        }
+                    }
                 }
+
             }
-            cout<<number;
+            return make_pair(min,max);
         }
         virtual ~bot(){};
     };
@@ -1620,12 +1753,15 @@ public:
                 gametable.clicktile(x,y);
             else if(x>game_dimension_y && y<game_dimension_y && x<game_dimension_x)
             {
-                gametable.undoEntireMove();
+                //gametable.undoEntireMove();
             }
         }
         if(gametable.playerTurn != gametable.viewposition && gametable.playerControl != "pvp")
         {
-            gamebot.searchBestMove(4);
+            //gamebot.searchBestMove(1);
+            gamebot.freef();
+            pair<float,float> b=gamebot.rec(3,100,0,-100,100);
+                cout<<b.first<<"   "<<b.second<<"REZ";
         }
     }
 
@@ -1758,11 +1894,9 @@ public:
         selectGameMenuTexture.display();
         selectGameMenuSprite.setTexture(selectGameMenuTexture.getTexture());
         selectGameMenuSprite.setPosition(selectGameMenuLeft,selectGameMenuTop);
-
     }
     string clickSelectGame(int x,int y){
         if (x>selectGameMenuLeft && x<selectGameMenuLeft+pvp.getGlobalBounds().width) {
-            cout<<y<<endl;
             int startingy=selectGameMenuTop + 125;
             if (y > startingy && y < startingy + pvp.getGlobalBounds().height)
                 return "pvp";

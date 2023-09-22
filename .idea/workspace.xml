@@ -20,7 +20,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="-fixed enpassant and castle bugs">
+    <list default="true" id="4c8725d0-2c06-4a13-aa0a-2ff041e0e070" name="Changes" comment="-added interface,fixe castle bugs,added class bot and added undo_move">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
@@ -158,7 +158,14 @@
       <workItem from="1694168091822" duration="4681000" />
       <workItem from="1694529857118" duration="7171000" />
       <workItem from="1694602716275" duration="12728000" />
-      <workItem from="1694631659766" duration="1000" />
+      <workItem from="1694631659766" duration="77000" />
+      <workItem from="1694686053319" duration="14197000" />
+      <workItem from="1694716062500" duration="820000" />
+      <workItem from="1694767318847" duration="8763000" />
+      <workItem from="1694791628642" duration="10062000" />
+      <workItem from="1694858428515" duration="15662000" />
+      <workItem from="1695116722533" duration="5414000" />
+      <workItem from="1695394715742" duration="2000" />
     </task>
     <task id="LOCAL-00001" summary="-">
       <created>1687277963435</created>
@@ -209,7 +216,14 @@
       <option name="project" value="LOCAL" />
       <updated>1690389125793</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="-added interface,fixe castle bugs,added class bot and added undo_move">
+      <created>1694631703173</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1694631703173</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -238,7 +252,8 @@
     <MESSAGE value="-added en passant,promotion and tile highlights" />
     <MESSAGE value="-" />
     <MESSAGE value="-fixed enpassant and castle bugs" />
-    <option name="LAST_COMMIT_MESSAGE" value="-fixed enpassant and castle bugs" />
+    <MESSAGE value="-added interface,fixe castle bugs,added class bot and added undo_move" />
+    <option name="LAST_COMMIT_MESSAGE" value="-added interface,fixe castle bugs,added class bot and added undo_move" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
