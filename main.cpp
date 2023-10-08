@@ -545,7 +545,6 @@ public:
 
 class pawn : public piece {
 private:
-
     vector<pair<int, int>> movement;
 public:
     pair <string,shared_ptr<tile>> enpassantsquare;
@@ -592,7 +591,7 @@ public:
                 string tilename = fromcoordinatestoname(make_pair(currentx + i.first, currenty + i.second));
                 if (pawnmovetype == 1 && totaltiles[tilename]->getontile() == "empty") {
                     possiblesquares[tilename] = totaltiles[tilename];
-                } else if (pawnmovetype == 2 && totaltiles[tilename]->getontile() == "empty" && !moved) {
+                } else if (pawnmovetype == 2 && totaltiles[tilename]->getontile() == "empty" &&   possiblesquares.size() && !moved) {
                     {
                         possiblesquares[tilename] = totaltiles[tilename];
                     }
@@ -601,6 +600,7 @@ public:
                 }
             }
         }
+        if(enpassantsquare.second!=nullptr)
         if(enpassantsquare.second!=nullptr)
         {
             possiblesquares[enpassantsquare.first]=enpassantsquare.second;
@@ -722,7 +722,7 @@ private:
             if (gamemodetype == "standard") {
                 for (int i = 1; i <= 8; i++)
                     for (int j = 1; j <= 8; j++) {
-                        if (rand() % 2==0 )
+                        if (rand() % 2==3 )
                             viewposition = "white";
                         else
                             viewposition = "black";
@@ -1044,7 +1044,9 @@ private:
             }
             undoInvalidMove();
             if(flags[0]=="t")
-            pieceSelected->setMoved(false);
+            {
+                pieceSelected->setMoved(false);
+            }
             if(flags[1]=="lw")
                 {
                     tablePieces["lWR"]->getTilepair().second->setontile("empty");
@@ -1098,7 +1100,6 @@ private:
             executemovepart1();
             if (checkIfInCheck())
             {
-
                 undoInvalidMove();
                 return false;
             }
@@ -1253,7 +1254,7 @@ private:
                 else
                     tablePieces["BK"]->getTilepair().second->setCheckhisghlight(true);
                 undoInvalidMove();
-                cout << "CHECK " << playerTurn << endl;
+                //cout << "CHECK " << playerTurn << endl;
                 return true;
 
                 return false;
@@ -1528,7 +1529,7 @@ private:
         float piecedifference;
         float positiondifference;
         int number;
-        vector<string> flagss;
+
         string stringPieceTakenn;
         shared_ptr<piece> pieceTakenn;
         string gameStatus;
@@ -1538,6 +1539,7 @@ private:
         map<string, bool> colorToBool;
         vector<int> v={-1,3,5,8,-6,-4,7,8};
         int indice=0;
+        bool started= true;
     public:
         bool minMaxOrMaxMin;
 
@@ -1545,53 +1547,44 @@ private:
                 {{"white", 1},
                  {"black", 0}}) {}
 
-        void freef()
-        {
-            minMaxOrMaxMin=0;
-            cout<<minMaxOrMaxMin<<"COL"<<endl;
-        }
-        pair<float,float> rec(int d,float mi,float ma,float alpha,float beta) {
-            d--;
-            float minn = 100;
-            float maxx = 0;
-            for (int i = 0; i < 1; i++)
-            {
-                for (int j = 1; j >= 0; j--) {
-                    if (d == 0) {
-                        eval = v[indice];
-                        indice++;
-                        cout << eval << " ";
-                        if (eval > maxx)
-                            maxx = eval;
-                        return make_pair(minn,maxx);
-                    } else {
-                        resultOfRecursion = rec(d, minn, maxx, alpha, beta);
-                        if (d % 2 == minMaxOrMaxMin) {
-                            eval = resultOfRecursion.first;
-                            if (eval > maxx)
-                                maxx = eval;
-                            beta = min(eval, beta);
-                            if (beta <= alpha) {
-                                cout << "BREAK DIN FOR" << endl;
-                                return make_pair(minn,maxx);
-                            }
-                        } else if (d % 2 !=minMaxOrMaxMin) {
+        float rec(int d,float alpha,float beta) {
 
-                            eval = resultOfRecursion.second;
-                            if (eval < minn)
-                                minn = eval;
-                            alpha = max(eval, alpha);
-                            if (beta <= alpha)
-                            {
-                            cout << "BREAK DIN FOR" << endl;
-                                return make_pair(minn,maxx);
-                            }
-                        }
-                        //cout << endl<<alpha<<" "<<beta<<endl;
+                    if (d == 0) {
+                        eval = ::rand()%100;
+                        cout<<eval<<endl;
+                        return eval;
                     }
-                }
-        }
-            return make_pair(minn,maxx);
+                        if (d % 2 == minMaxOrMaxMin) {
+                            float maxx = -100;
+                            for (int j = 1; j >= 0; j--) {
+                                eval = rec(d-1, alpha, beta);
+                                if (eval > maxx)
+                                    maxx = eval;
+                                alpha = max(eval, alpha);
+                                if (beta <= alpha)
+                                {
+                                    cout<<endl;
+                                    break;
+
+                                }
+                            }
+                            return maxx;
+                        } else if (d % 2 !=minMaxOrMaxMin) {
+                            float minn = 100;
+                            for (int j = 1; j >= 0; j--) {
+                                eval = rec(d-1, alpha, beta);
+                                if (eval < minn)
+                                    minn = eval;
+                                beta = min(eval, beta);
+                                if (beta <= alpha) {
+                                    cout<<endl;
+                                    break;
+
+                                }
+                            }
+                            return minn;
+                        }
+
         }
         void calculatePieceDifference()
         {
@@ -1630,88 +1623,135 @@ private:
         }
         void searchBestMove(int d)
         {
+            started= true;
             sf::Clock c1;
             d*=2;
+            number=0;
             minMaxOrMaxMin=colorToBool[gametable.playerTurn];
             cout<<minMaxOrMaxMin<<"COL"<<endl;
-            if(minMaxOrMaxMin)
-                cout<<searchBestMoveLoop(d,1001,-1001).second;
-            else
-                cout<<searchBestMoveLoop(d,1001,-1001).first;
-            cout<<"GATA"<<number<<endl;
-            cout<<c1.getElapsedTime().asMilliseconds();
+            cout<<"REZULT"<<searchBestMoveLoop(4,-1001,1001).first;
+            cout<<"NUMBER"<<number<<endl;
+            cout<<"TIME:"<<c1.getElapsedTime().asMilliseconds()<<endl;
         }
-        pair<float,float> searchBestMoveLoop(int d,float minn,float maxx)
+        pair<float,vector<string>> searchBestMoveLoop(int d,float alpha,float beta)
         {
-            float min=1001;
-            float max=-1001;
-            d--;
             string stringPrevTile;
             shared_ptr<tile> PrevTile;
             map<string,shared_ptr<piece>> tp=gametable.tablePieces;
-            for (auto &i:tp) {
-                if (i.second->getPiececolor() == gametable.playerTurn) {
-                    i.second->calculatePossibleMoves();
-                    map<string, shared_ptr<tile>> ty = i.second->getPossiblesquares();
-                    for (auto &j: ty) {
-                        //cout<<"EXECUTE";
-                        gametable.pieceSelected = i.second;
-                        gametable.stringPieceSelected = i.first;
-                        gametable.previousTileSelected = i.second->getTilepair().second;
-                        gametable.stringPreviousTileSelected = i.second->getTilepair().first;
-                        gametable.tileSelected = j.second;
-                        gametable.stringTileSelected = j.first;
-                        stringPrevTile=i.second->getTilepair().first;
-                        PrevTile=i.second->getTilepair().second;
-                        if (gametable.tileSelected->getontile() != gametable.playerTurn &&
-                            gametable.tileSelected->getontile() != "empty") {
-                            stringPieceTakenn = gametable.piecesOnTiles[gametable.stringTileSelected];
-                            pieceTakenn = gametable.tablePieces[stringPieceTakenn];
-                        } else {
-                            pieceTakenn = nullptr;
-                        }
-                        //cout << " " << i.first << " " << i.second->getTilepair().first << " "<< gametable.stringTileSelected<<endl;
-                        if (gametable.executevirtualmove()) {
-                            flagss = gametable.flags;
-                            if (d == 0) {
-                                {
-                                    evaluateposition();
-                                    if(abs(positiondifference)<0.1)
-                                        positiondifference=0;
-                                    cout<<positiondifference<<" ";
-                                    number++;
-                                }
-                            } else {
-                                resultOfRecursion=searchBestMoveLoop(d,min,max);
-                                if(d%2==minMaxOrMaxMin)
-                                {
-                                    positiondifference=resultOfRecursion.first;
-                                }
-                                else
-                                {
-                                    positiondifference=resultOfRecursion.second;
-                                }
-                               cout<<endl<<positiondifference<<endl;
-                            }
-                            if(d%2!=minMaxOrMaxMin)
-                            {
-                                if(positiondifference<min)
-                                    min=positiondifference;
-                            }
-                            else
-                            {
-                                if(positiondifference>max)
-                                    max=positiondifference;
-                            }
-
-                            gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
-                        }
+            vector<string> flagss;
+            if (started || gametable.executevirtualmove()) {
+                started= false;
+                if (d == 0) {
+                    {
+                        number++;
+                        evaluateposition();
+                        if(abs(positiondifference)<0.1)
+                            positiondifference=0;
+                        //cout<<positiondifference<<" ";
+                        //gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
+                        return make_pair(positiondifference,gametable.flags);
                     }
                 }
-
+                    if(d%2==minMaxOrMaxMin)
+                    {
+                        float maximum=-1001;
+                        tp=gametable.tablePieces;
+                        for (auto &i:tp) {
+                            if (i.second->getPiececolor() == gametable.playerTurn) {
+                                i.second->calculatePossibleMoves();
+                                map<string, shared_ptr<tile>> ty = i.second->getPossiblesquares();
+                                for (auto &j: ty) {
+                                    gametable.pieceSelected = i.second;
+                                    gametable.stringPieceSelected = i.first;
+                                    gametable.previousTileSelected = i.second->getTilepair().second;
+                                    gametable.stringPreviousTileSelected = i.second->getTilepair().first;
+                                    gametable.tileSelected = j.second;
+                                    gametable.stringTileSelected = j.first;
+                                    stringPrevTile = i.second->getTilepair().first;
+                                    PrevTile = i.second->getTilepair().second;
+                                    if (gametable.tileSelected->getontile() != gametable.playerTurn &&
+                                        gametable.tileSelected->getontile() != "empty")
+                                    {
+                                        cout<<"AICI"<<stringPieceTakenn<<endl;
+                                        stringPieceTakenn = gametable.piecesOnTiles[gametable.stringTileSelected];
+                                        pieceTakenn = gametable.tablePieces[stringPieceTakenn];
+                                    } else {
+                                        pieceTakenn = nullptr;
+                                    }
+                                    cout<<gametable.stringPieceSelected<<" "<<gametable.stringPreviousTileSelected<<" "<<gametable.stringTileSelected<<" "<<gametable.pieceSelected->getMoved()<<endl;
+                                    pair<float,vector<string>> rez=searchBestMoveLoop(d - 1, alpha, beta);
+                                    positiondifference = rez.first;
+                                    flagss = rez.second;
+                                    if (positiondifference > maximum)
+                                        maximum = positiondifference;
+                                   alpha = max(eval, alpha);
+                                   if (beta <= alpha) {
+                                       cout << "BREAK";
+                                      gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
+                                       break;
+                                    }
+                                    cout<<"UNDO"<<endl;
+                                    gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
+                                }
+                    }
+                            if (beta <= alpha)
+                               break;
+                        }
+                        return make_pair(positiondifference,gametable.flags);
+                    }
+                    else
+                    {
+                        float minimum=1001;
+                        tp=gametable.tablePieces;
+                        for (auto &i:tp) {
+                            if (i.second->getPiececolor() == gametable.playerTurn) {
+                                i.second->calculatePossibleMoves();
+                                map<string, shared_ptr<tile>> ty = i.second->getPossiblesquares();
+                                for (auto &j: ty) {
+                                    gametable.pieceSelected = i.second;
+                                    gametable.stringPieceSelected = i.first;
+                                    gametable.previousTileSelected = i.second->getTilepair().second;
+                                    gametable.stringPreviousTileSelected = i.second->getTilepair().first;
+                                    gametable.tileSelected = j.second;
+                                    gametable.stringTileSelected = j.first;
+                                    stringPrevTile = i.second->getTilepair().first;
+                                    PrevTile = i.second->getTilepair().second;
+                                    if (gametable.tileSelected->getontile() != gametable.playerTurn &&
+                                        gametable.tileSelected->getontile() != "empty")
+                                    {
+                                        cout<<"AICI"<<stringPieceTakenn<<endl;
+                                        stringPieceTakenn = gametable.piecesOnTiles[gametable.stringTileSelected];
+                                        pieceTakenn = gametable.tablePieces[stringPieceTakenn];
+                                    } else {
+                                        pieceTakenn = nullptr;
+                                    }
+                                    cout<<gametable.stringPieceSelected<<" "<<gametable.stringPreviousTileSelected<<" "<<gametable.stringTileSelected<<" "<<gametable.pieceSelected->getMoved()<<endl<<endl;
+                                    pair<float,vector<string>> rez=searchBestMoveLoop(d - 1, alpha, beta);
+                                    positiondifference = rez.first;
+                                    flagss = rez.second;
+                                    if (positiondifference < minimum)
+                                        minimum = positiondifference;
+                                   alpha = max(eval, alpha);
+                                    if (beta <= alpha) {
+                                        cout << "BREAK";
+                                        gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
+                                        break;
+                                    }
+                                    cout<<"UNDO"<<endl;
+                                    gametable.undoEntireMove(flagss, i.first, j.first, stringPrevTile,stringPieceTakenn, i.second, pieceTakenn, j.second,PrevTile);
+                                }
+                                }
+                           if (beta <= alpha) {
+                                break;
+                            }
+                        }
+                        return make_pair(positiondifference,gametable.flags);
+                }
+                }
             }
-            return make_pair(min,max);
-        }
+
+
+
         virtual ~bot(){};
     };
     bot gamebot;
@@ -1758,10 +1798,7 @@ public:
         }
         if(gametable.playerTurn != gametable.viewposition && gametable.playerControl != "pvp")
         {
-            //gamebot.searchBestMove(1);
-            gamebot.freef();
-            pair<float,float> b=gamebot.rec(3,100,0,-100,100);
-                cout<<b.first<<"   "<<b.second<<"REZ";
+            gamebot.searchBestMove(1);
         }
     }
 
